@@ -7,6 +7,7 @@ import 'package:custom_image_crop/src/calculators/calculate_crop_fit_params.dart
 import 'package:custom_image_crop/src/calculators/calculate_on_crop_params.dart';
 import 'package:custom_image_crop/src/clippers/inverted_clipper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gesture_x_detector/gesture_x_detector.dart';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 
@@ -549,6 +550,79 @@ class _CustomImageCropState extends State<CustomImageCrop>
             ),
           );
     }
+  }
+
+  @override
+  Future<ByteData?> getCroppedBytes() async {
+    if (_imageAsUIImage == null) {
+      return null;
+    }
+    final imageWidth = _imageAsUIImage!.width;
+    final imageHeight = _imageAsUIImage!.height;
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final onCropParams = caclulateOnCropParams(
+      cropPercentage: widget.cropPercentage,
+      imageFit: widget.imageFit,
+      imageHeight: imageHeight,
+      imageWidth: imageWidth,
+      screenHeight: _height,
+      screenWidth: _width,
+      dataScale: data.scale,
+      aspectRatio: (widget.ratio?.width ?? 1) / (widget.ratio?.height ?? 1),
+    );
+    final clipPath = Path.from(_getPath(
+      cropWidth: onCropParams.cropSizeWidth,
+      cropHeight: onCropParams.cropSizeHeight,
+      width: onCropParams.cropSizeWidth,
+      height: onCropParams.cropSizeHeight,
+      borderRadius: widget.borderRadius,
+      clipShape: widget.clipShapeOnCrop,
+    ));
+    final matrix4Image = Matrix4.diagonal3(vector_math.Vector3.all(1))
+      ..translate(
+        onCropParams.translateScale * data.x + onCropParams.cropSizeWidth / 2,
+        onCropParams.translateScale * data.y + onCropParams.cropSizeHeight / 2,
+      )
+      ..scale(onCropParams.scale)
+      ..rotateZ(data.angle);
+    final bgPaint = Paint()
+      ..color = widget.backgroundColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        0,
+        onCropParams.cropSizeWidth,
+        onCropParams.cropSizeHeight,
+      ),
+      bgPaint,
+    );
+    canvas.save();
+    canvas.clipPath(clipPath);
+    canvas.transform(matrix4Image.storage);
+    canvas.drawImage(
+      _imageAsUIImage!,
+      Offset(-imageWidth / 2, -imageHeight / 2),
+      widget.imagePaintDuringCrop,
+    );
+    canvas.restore();
+
+    // Optionally remove magenta from image by evaluating every pixel
+    // See https://github.com/brendan-duncan/image/blob/master/lib/src/transform/copy_crop.dart
+
+    // final bytes = await compute(computeToByteData, <String, dynamic>{'pictureRecorder': pictureRecorder, 'cropWidth': cropWidth});
+
+    ui.Picture picture = pictureRecorder.endRecording();
+    ui.Image image = await picture.toImage(
+      onCropParams.cropSizeWidth.floor(),
+      onCropParams.cropSizeHeight.floor(),
+    );
+
+    // Adding compute would be preferrable. Unfortunately we cannot pass an ui image to this.
+    // A workaround would be to save the image and load it inside of the isolate
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    return bytes;
   }
 
   @override

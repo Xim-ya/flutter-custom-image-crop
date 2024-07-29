@@ -1,5 +1,6 @@
 import 'package:custom_image_crop/src/models/model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// The controller that handles the cropping and
 /// changing of the cropping area
@@ -49,4 +50,6 @@ mixin CustomImageCropListener {
 
   /// Crop the image
   Future<MemoryImage?> onCropImage();
+
+  Future<ByteData?> getCroppedBytes();
 }
