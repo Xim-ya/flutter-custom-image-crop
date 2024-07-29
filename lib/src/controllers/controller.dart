@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:custom_image_crop/src/models/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,9 @@ class CustomImageCropController {
   /// Crop the image
   Future<ByteData?> getCroppedBytes() =>
       listeners.map((e) => e.getCroppedBytes()).first;
+
+  Future<ui.Image> getCroppedImage() =>
+      listeners.map((e) => e.getCroppedImage()).first;
 
   /// The data that handles the transformation of the cropped image.
   CropImageData? get cropImageData => listeners.map((e) => e.data).first;
@@ -56,4 +61,6 @@ mixin CustomImageCropListener {
   Future<MemoryImage?> onCropImage();
 
   Future<ByteData?> getCroppedBytes();
+
+  Future<ui.Image> getCroppedImage();
 }
