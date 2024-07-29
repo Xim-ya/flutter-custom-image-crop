@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -557,6 +558,8 @@ class _CustomImageCropState extends State<CustomImageCrop>
     if (_imageAsUIImage == null) {
       return null;
     }
+
+    dev.log('CROP : bytes flow 1');
     final imageWidth = _imageAsUIImage!.width;
     final imageHeight = _imageAsUIImage!.height;
     final pictureRecorder = ui.PictureRecorder();
@@ -608,20 +611,24 @@ class _CustomImageCropState extends State<CustomImageCrop>
     );
     canvas.restore();
 
+    dev.log('CROP : bytes flow 2');
     // Optionally remove magenta from image by evaluating every pixel
     // See https://github.com/brendan-duncan/image/blob/master/lib/src/transform/copy_crop.dart
 
     // final bytes = await compute(computeToByteData, <String, dynamic>{'pictureRecorder': pictureRecorder, 'cropWidth': cropWidth});
 
     ui.Picture picture = pictureRecorder.endRecording();
+    dev.log('CROP : bytes flow 3');
     ui.Image image = await picture.toImage(
       onCropParams.cropSizeWidth.floor(),
       onCropParams.cropSizeHeight.floor(),
     );
+    dev.log('CROP : bytes flow 4');
 
     // Adding compute would be preferrable. Unfortunately we cannot pass an ui image to this.
     // A workaround would be to save the image and load it inside of the isolate
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    dev.log('CROP : bytes flow 5');
     return bytes;
   }
 
