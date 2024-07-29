@@ -12,6 +12,10 @@ class CustomImageCropController {
   Future<MemoryImage?> onCropImage() =>
       listeners.map((e) => e.onCropImage()).first;
 
+  /// Crop the image
+  Future<ByteData?> getCroppedBytes() =>
+      listeners.map((e) => e.getCroppedBytes()).first;
+
   /// The data that handles the transformation of the cropped image.
   CropImageData? get cropImageData => listeners.map((e) => e.data).first;
 
