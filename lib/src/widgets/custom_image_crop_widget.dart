@@ -695,6 +695,7 @@ class _CustomImageCropState extends State<CustomImageCrop>
     // final bytes = await compute(computeToByteData, <String, dynamic>{'pictureRecorder': pictureRecorder, 'cropWidth': cropWidth});
 
     ui.Picture picture = pictureRecorder.endRecording();
+
     dev.log('CROP : bytes flow 3');
     ui.Image image = await picture.toImage(
       onCropParams.cropSizeWidth.floor(),
@@ -704,7 +705,8 @@ class _CustomImageCropState extends State<CustomImageCrop>
 
     // Adding compute would be preferrable. Unfortunately we cannot pass an ui image to this.
     // A workaround would be to save the image and load it inside of the isolate
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+
     dev.log('CROP : bytes flow 5');
     return bytes;
   }
@@ -778,7 +780,7 @@ class _CustomImageCropState extends State<CustomImageCrop>
 
     // Adding compute would be preferrable. Unfortunately we cannot pass an ui image to this.
     // A workaround would be to save the image and load it inside of the isolate
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     return bytes == null ? null : MemoryImage(bytes.buffer.asUint8List());
   }
 
